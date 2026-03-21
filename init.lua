@@ -311,11 +311,58 @@ require("lazy").setup({
 			})
 
 			local capabilities = require("blink.cmp").get_lsp_capabilities()
+			local lspconfig_util = require("lspconfig.util")
+
+			local eslint_config_files = {
+				"eslint.config.js",
+				"eslint.config.cjs",
+				"eslint.config.mjs",
+				"eslint.config.ts",
+				"eslint.config.cts",
+				"eslint.config.mts",
+				".eslintrc",
+				".eslintrc.js",
+				".eslintrc.cjs",
+				".eslintrc.mjs",
+				".eslintrc.json",
+				".eslintrc.yaml",
+				".eslintrc.yml",
+			}
+
+			local function project_has_local_eslint(root_dir)
+				local package_json = lspconfig_util.path.join(root_dir, "package.json")
+				if vim.fn.filereadable(package_json) == 0 then
+					return false
+				end
+
+				local ok, package_data = pcall(vim.json.decode, table.concat(vim.fn.readfile(package_json), "\n"))
+				if not ok or type(package_data) ~= "table" then
+					return false
+				end
+
+				for _, field in ipairs({ "dependencies", "devDependencies", "optionalDependencies", "peerDependencies" }) do
+					local deps = package_data[field]
+					if type(deps) == "table" and deps.eslint then
+						return true
+					end
+				end
+
+				return false
+			end
 
 			-- Add LSP servers here
 			local servers = {
 				clangd = {},
-				eslint = {},
+				eslint = {
+					root_dir = function(fname)
+						local root_dir = lspconfig_util.root_pattern(unpack(eslint_config_files))(fname)
+						if root_dir and project_has_local_eslint(root_dir) then
+							return root_dir
+						end
+
+						return nil
+					end,
+				},
 				gopls = {},
 				pyright = {},
 				ts_ls = {},
@@ -419,7 +466,7 @@ require("lazy").setup({
 					return nil
 				else
 					return {
-						timeout_ms = 500,
+						timeout_ms = 3000,
 						lsp_format = "fallback",
 					}
 				end

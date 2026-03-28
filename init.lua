@@ -471,9 +471,11 @@ require("lazy").setup({
 				"ols",
 				"pyright",
 				"prettier",
+				"ruff",
 				"rust-analyzer",
 				"stylua",
 				"swiftformat",
+				"tinymist",
 				"typescript-language-server",
 				"zls",
 			}

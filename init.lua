@@ -196,7 +196,6 @@ require("lazy").setup({
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			{ "mason-org/mason.nvim", opts = {} },
-			"mason-org/mason-lspconfig.nvim",
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
 			{ "j-hui/fidget.nvim", opts = {} },
 			"saghen/blink.cmp",
@@ -350,22 +349,105 @@ require("lazy").setup({
 				return false
 			end
 
+			local function resolve_python_path(root_dir, file_path)
+				local function executable_python_in(dir)
+					if type(dir) ~= "string" or dir == "" then
+						return nil
+					end
+
+					local python_path = lspconfig_util.path.join(dir, ".venv", "bin", "python")
+					if vim.fn.executable(python_path) == 1 then
+						return python_path
+					end
+
+					return nil
+				end
+
+				if type(root_dir) == "string" and root_dir ~= "" then
+					local root_python = executable_python_in(root_dir)
+					if root_python then
+						return root_python
+					end
+
+					local current_dir = vim.fs.dirname(root_dir)
+					while current_dir and current_dir ~= root_dir do
+						local parent_python = executable_python_in(current_dir)
+						if parent_python then
+							return parent_python
+						end
+
+						local parent_dir = vim.fs.dirname(current_dir)
+						if not parent_dir or parent_dir == current_dir then
+							break
+						end
+						current_dir = parent_dir
+					end
+					
+					if type(file_path) == "string" and file_path ~= "" then
+						current_dir = vim.fs.dirname(file_path)
+						while current_dir and current_dir ~= root_dir do
+							local nested_python = executable_python_in(current_dir)
+							if nested_python then
+								return nested_python
+							end
+
+							local parent_dir = vim.fs.dirname(current_dir)
+							if not parent_dir or parent_dir == current_dir then
+								break
+							end
+							current_dir = parent_dir
+						end
+					end
+				end
+
+				local virtual_env = vim.env.VIRTUAL_ENV
+				if type(virtual_env) == "string" and virtual_env ~= "" then
+					local activated_python = lspconfig_util.path.join(virtual_env, "bin", "python")
+					if vim.fn.executable(activated_python) == 1 then
+						return activated_python
+					end
+				end
+
+				return nil
+			end
+
 			-- Add LSP servers here
 			local servers = {
 				clangd = {},
 				eslint = {
-					root_dir = function(fname)
+					root_dir = function(bufnr, on_dir)
+						local fname = vim.api.nvim_buf_get_name(bufnr)
 						local root_dir = lspconfig_util.root_pattern(unpack(eslint_config_files))(fname)
 						if root_dir and project_has_local_eslint(root_dir) then
-							return root_dir
+							on_dir(root_dir)
 						end
-
-						return nil
 					end,
 				},
 				gopls = {},
-				pyright = {},
-				sourcekit = {},
+				pyright = {
+					cmd = { "pyright-langserver", "--stdio" },
+					filetypes = { "python" },
+					root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
+					before_init = function(_, config)
+						local python_path = resolve_python_path(config.root_dir, vim.api.nvim_buf_get_name(0))
+						config.settings = config.settings or {}
+						config.settings.python = config.settings.python or {}
+						config.settings.python.pythonPath = python_path
+					end,
+					root_dir = function(bufnr, on_dir)
+						local fname = vim.api.nvim_buf_get_name(bufnr)
+						local root_dir = vim.fs.root(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" })
+						if root_dir then
+							on_dir(root_dir)
+						end
+					end,
+					settings = {
+						python = {},
+					},
+				},
+				sourcekit = {
+					filetypes = { "swift" },
+				},
 				ts_ls = {},
 				rust_analyzer = {},
 				zls = {},
@@ -381,38 +463,30 @@ require("lazy").setup({
 				},
 			}
 
-			-- LSPs to install via Mason
-			local ensure_installed = vim.tbl_keys(servers or {})
-			ensure_installed = vim.tbl_filter(function(server_name)
-				return server_name ~= "sourcekit"
-			end, ensure_installed)
-			vim.list_extend(ensure_installed, {
+			local ensure_installed = {
+				"clangd",
+				"eslint-lsp",
+				"gopls",
+				"lua-language-server",
+				"ols",
+				"pyright",
 				"prettier",
+				"rust-analyzer",
 				"stylua",
 				"swiftformat",
-			})
+				"typescript-language-server",
+				"zls",
+			}
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
-			require("mason-lspconfig").setup({
-				ensure_installed = {},
-				automatic_installation = false,
-				handlers = {
-					function(server_name)
-						local server = servers[server_name] or {}
-						server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-						require("lspconfig")[server_name].setup(server)
-					end,
-				},
-			})
-
-			do
-				local server = servers.sourcekit or {}
+			for server_name, server in pairs(servers) do
 				server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-				require("lspconfig").sourcekit.setup(server)
+				vim.lsp.config(server_name, server)
+				vim.lsp.enable(server_name)
 			end
 
 			-- Set up ruff using vim.lsp.config (Neovim 0.11+)
-			vim.lsp.config.ruff = {
+			vim.lsp.config("ruff", {
 				cmd = { "ruff", "server" },
 				filetypes = { "python" },
 				root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
@@ -423,34 +497,15 @@ require("lazy").setup({
 						},
 					},
 				},
-			}
+			})
 			vim.lsp.enable("ruff")
 
-			-- Set up pyright with venv detection
-			vim.lsp.config.pyright = {
-				cmd = { "pyright-langserver", "--stdio" },
-				filetypes = { "python" },
-				root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
-				settings = {
-					python = {
-						pythonPath = (function()
-							local venv = vim.fn.getcwd() .. "/.venv/bin/python"
-							if vim.fn.executable(venv) == 1 then
-								return venv
-							end
-							return "python"
-						end)(),
-					},
-				},
-			}
-			vim.lsp.enable("pyright")
-
 			-- Set up tinymist for Typst
-			vim.lsp.config.tinymist = {
+			vim.lsp.config("tinymist", {
 				cmd = { "tinymist" },
 				filetypes = { "typst" },
 				root_markers = { "typst.toml", ".git" },
-			}
+			})
 			vim.lsp.enable("tinymist")
 		end,
 	},

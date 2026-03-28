@@ -385,6 +385,7 @@ require("lazy").setup({
 			vim.list_extend(ensure_installed, {
 				"prettier",
 				"stylua",
+				"swiftformat",
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -477,6 +478,7 @@ require("lazy").setup({
 				json = { "prettier" },
 				lua = { "stylua" },
 				python = { "ruff_format" },
+				swift = { "swiftformat" },
 				typescript = { "prettier" },
 				typescriptreact = { "prettier" },
 				-- Add formatters here

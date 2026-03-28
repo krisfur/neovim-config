@@ -365,6 +365,7 @@ require("lazy").setup({
 				},
 				gopls = {},
 				pyright = {},
+				sourcekit = {},
 				ts_ls = {},
 				rust_analyzer = {},
 				zls = {},
@@ -382,6 +383,9 @@ require("lazy").setup({
 
 			-- LSPs to install via Mason
 			local ensure_installed = vim.tbl_keys(servers or {})
+			ensure_installed = vim.tbl_filter(function(server_name)
+				return server_name ~= "sourcekit"
+			end, ensure_installed)
 			vim.list_extend(ensure_installed, {
 				"prettier",
 				"stylua",
@@ -400,6 +404,12 @@ require("lazy").setup({
 					end,
 				},
 			})
+
+			do
+				local server = servers.sourcekit or {}
+				server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
+				require("lspconfig").sourcekit.setup(server)
+			end
 
 			-- Set up ruff using vim.lsp.config (Neovim 0.11+)
 			vim.lsp.config.ruff = {

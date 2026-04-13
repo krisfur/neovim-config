@@ -546,17 +546,17 @@ require("lazy").setup({
 					}
 				end
 			end,
-			formatters_by_ft = {
+			formatters_by_ft = vim.tbl_extend("force", {
 				javascript = { "prettier" },
 				javascriptreact = { "prettier" },
 				json = { "prettier" },
 				lua = { "stylua" },
 				python = { "ruff_format" },
-				swift = { "swiftformat" },
 				typescript = { "prettier" },
 				typescriptreact = { "prettier" },
-				-- Add formatters here
-			},
+			}, is_windows and {} or {
+				swift = { "swiftformat" },
+			}),
 		},
 	},
 

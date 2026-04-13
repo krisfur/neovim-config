@@ -352,13 +352,34 @@ require("lazy").setup({
 			end
 
 			local function resolve_python_path(root_dir, file_path)
+				local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" } or { ".venv", "bin", "python" }
+				local venv_python_subpath = is_windows and { "Scripts", "python.exe" } or { "bin", "python" }
+
 				local function executable_python_in(dir)
 					if type(dir) ~= "string" or dir == "" then
 						return nil
 					end
 
-					local python_path = lspconfig_util.path.join(dir, ".venv", "bin", "python")
+					local python_path = lspconfig_util.path.join(dir, unpack(python_subpath))
 					if vim.fn.executable(python_path) == 1 then
+						return python_path
+					end
+
+					return nil
+				end
+
+				local function executable_from_command(cmd, cwd)
+					if vim.fn.executable(cmd[1]) ~= 1 then
+						return nil
+					end
+
+					local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+					if result.code ~= 0 then
+						return nil
+					end
+
+					local python_path = vim.trim(result.stdout or "")
+					if python_path ~= "" and vim.fn.executable(python_path) == 1 then
 						return python_path
 					end
 
@@ -404,10 +425,21 @@ require("lazy").setup({
 
 				local virtual_env = vim.env.VIRTUAL_ENV
 				if type(virtual_env) == "string" and virtual_env ~= "" then
-					local activated_python = lspconfig_util.path.join(virtual_env, "bin", "python")
+					local activated_python = lspconfig_util.path.join(virtual_env, unpack(venv_python_subpath))
 					if vim.fn.executable(activated_python) == 1 then
 						return activated_python
 					end
+				end
+
+				local command_cwd = type(root_dir) == "string" and root_dir ~= "" and root_dir or nil
+				local uv_python = executable_from_command({ "uv", "python", "find" }, command_cwd)
+				if uv_python then
+					return uv_python
+				end
+
+				local mise_python = executable_from_command({ "mise", "which", "python" }, command_cwd)
+				if mise_python then
+					return mise_python
 				end
 
 				return nil
@@ -432,9 +464,11 @@ require("lazy").setup({
 					root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
 					before_init = function(_, config)
 						local python_path = resolve_python_path(config.root_dir, vim.api.nvim_buf_get_name(0))
-						config.settings = config.settings or {}
-						config.settings.python = config.settings.python or {}
-						config.settings.python.pythonPath = python_path
+						if python_path then
+							config.settings = config.settings or {}
+							config.settings.python = config.settings.python or {}
+							config.settings.python.pythonPath = python_path
+						end
 					end,
 					root_dir = function(bufnr, on_dir)
 						local fname = vim.api.nvim_buf_get_name(bufnr)

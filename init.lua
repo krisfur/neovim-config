@@ -30,6 +30,8 @@ vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
 
+local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
+
 -- [[ Keymaps ]]
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
@@ -382,7 +384,7 @@ require("lazy").setup({
 						end
 						current_dir = parent_dir
 					end
-					
+
 					if type(file_path) == "string" and file_path ~= "" then
 						current_dir = vim.fs.dirname(file_path)
 						while current_dir and current_dir ~= root_dir do
@@ -436,7 +438,10 @@ require("lazy").setup({
 					end,
 					root_dir = function(bufnr, on_dir)
 						local fname = vim.api.nvim_buf_get_name(bufnr)
-						local root_dir = vim.fs.root(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" })
+						local root_dir = vim.fs.root(
+							fname,
+							{ "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" }
+						)
 						if root_dir then
 							on_dir(root_dir)
 						end
@@ -474,11 +479,13 @@ require("lazy").setup({
 				"ruff",
 				"rust-analyzer",
 				"stylua",
-				"swiftformat",
 				"tinymist",
 				"typescript-language-server",
 				"zls",
 			}
+			if not is_windows then
+				table.insert(ensure_installed, "swiftformat")
+			end
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 			for server_name, server in pairs(servers) do

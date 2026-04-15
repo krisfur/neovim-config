@@ -53,6 +53,7 @@ On first launch:
 | `<Space>tp` | Typst preview toggle |
 | `<Space>f` | Format buffer |
 | `<Space>th` | Toggle inlay hints |
+| `gcc` | Comment out selection |
 | `grd` | Go to definition |
 | `grr` | Go to references |
 | `grn` | Rename symbol |

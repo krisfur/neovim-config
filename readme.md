@@ -4,6 +4,8 @@
 
 ## Dependencies
 
+Requires `neovim >= 0.11.x`
+
 ### Arch Linux
 
 ```bash

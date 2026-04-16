@@ -31,6 +31,7 @@ vim.o.shiftwidth = 4
 vim.o.expandtab = true
 
 local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
+local tbl_unpack = table.unpack or unpack
 
 -- [[ Keymaps ]]
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
@@ -203,8 +204,45 @@ require("lazy").setup({
 			"saghen/blink.cmp",
 		},
 		config = function()
+			local lsp_attach_group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true })
+			local lsp_highlight_group = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
+			local lsp_detach_group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true })
+
+			---@param client vim.lsp.Client
+			---@param method vim.lsp.protocol.Method
+			---@param bufnr? integer
+			---@return boolean
+			local function client_supports_method(client, method, bufnr)
+				return client:supports_method(method, bufnr)
+			end
+
+			local function buffer_has_highlight_client(bufnr)
+				for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+					if
+						client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, bufnr)
+					then
+						return true
+					end
+				end
+
+				return false
+			end
+
+			vim.api.nvim_create_autocmd("LspDetach", {
+				group = lsp_detach_group,
+				callback = function(event)
+					if not vim.api.nvim_buf_is_valid(event.buf) or buffer_has_highlight_client(event.buf) then
+						return
+					end
+
+					vim.lsp.util.buf_clear_references(event.buf)
+					vim.api.nvim_clear_autocmds({ group = lsp_highlight_group, buffer = event.buf })
+					vim.b[event.buf].lsp_highlight_autocmds_enabled = nil
+				end,
+			})
+
 			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
+				group = lsp_attach_group,
 				callback = function(event)
 					local map = function(keys, func, desc, mode)
 						mode = mode or "n"
@@ -229,18 +267,6 @@ require("lazy").setup({
 						end)
 					end, "Switch [H]eader/Source")
 
-					---@param client vim.lsp.Client
-					---@param method vim.lsp.protocol.Method
-					---@param bufnr? integer
-					---@return boolean
-					local function client_supports_method(client, method, bufnr)
-						if vim.fn.has("nvim-0.11") == 1 then
-							return client:supports_method(method, bufnr)
-						else
-							return client.supports_method(method, { bufnr = bufnr })
-						end
-					end
-
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					if
 						client
@@ -250,27 +276,21 @@ require("lazy").setup({
 							event.buf
 						)
 					then
-						local highlight_augroup =
-							vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
-						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-							buffer = event.buf,
-							group = highlight_augroup,
-							callback = vim.lsp.buf.document_highlight,
-						})
+						if not vim.b[event.buf].lsp_highlight_autocmds_enabled then
+							vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+								buffer = event.buf,
+								group = lsp_highlight_group,
+								callback = vim.lsp.buf.document_highlight,
+							})
 
-						vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-							buffer = event.buf,
-							group = highlight_augroup,
-							callback = vim.lsp.buf.clear_references,
-						})
+							vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+								buffer = event.buf,
+								group = lsp_highlight_group,
+								callback = vim.lsp.buf.clear_references,
+							})
 
-						vim.api.nvim_create_autocmd("LspDetach", {
-							group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true }),
-							callback = function(event2)
-								vim.lsp.buf.clear_references()
-								vim.api.nvim_clear_autocmds({ group = "kickstart-lsp-highlight", buffer = event2.buf })
-							end,
-						})
+							vim.b[event.buf].lsp_highlight_autocmds_enabled = true
+						end
 					end
 
 					if
@@ -278,7 +298,8 @@ require("lazy").setup({
 						and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
 					then
 						map("<leader>th", function()
-							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+							local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
+							vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = event.buf })
 						end, "[T]oggle Inlay [H]ints")
 					end
 				end,
@@ -312,7 +333,6 @@ require("lazy").setup({
 			})
 
 			local capabilities = require("blink.cmp").get_lsp_capabilities()
-			local lspconfig_util = require("lspconfig.util")
 
 			local eslint_config_files = {
 				"eslint.config.js",
@@ -331,7 +351,7 @@ require("lazy").setup({
 			}
 
 			local function project_has_local_eslint(root_dir)
-				local package_json = lspconfig_util.path.join(root_dir, "package.json")
+				local package_json = vim.fs.joinpath(root_dir, "package.json")
 				if vim.fn.filereadable(package_json) == 0 then
 					return false
 				end
@@ -352,7 +372,8 @@ require("lazy").setup({
 			end
 
 			local function resolve_python_path(root_dir, file_path)
-				local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" } or { ".venv", "bin", "python" }
+				local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" }
+					or { ".venv", "bin", "python" }
 				local venv_python_subpath = is_windows and { "Scripts", "python.exe" } or { "bin", "python" }
 
 				local function executable_python_in(dir)
@@ -360,7 +381,7 @@ require("lazy").setup({
 						return nil
 					end
 
-					local python_path = lspconfig_util.path.join(dir, unpack(python_subpath))
+					local python_path = vim.fs.joinpath(dir, tbl_unpack(python_subpath))
 					if vim.fn.executable(python_path) == 1 then
 						return python_path
 					end
@@ -425,7 +446,7 @@ require("lazy").setup({
 
 				local virtual_env = vim.env.VIRTUAL_ENV
 				if type(virtual_env) == "string" and virtual_env ~= "" then
-					local activated_python = lspconfig_util.path.join(virtual_env, unpack(venv_python_subpath))
+					local activated_python = vim.fs.joinpath(virtual_env, tbl_unpack(venv_python_subpath))
 					if vim.fn.executable(activated_python) == 1 then
 						return activated_python
 					end
@@ -451,7 +472,7 @@ require("lazy").setup({
 				eslint = {
 					root_dir = function(bufnr, on_dir)
 						local fname = vim.api.nvim_buf_get_name(bufnr)
-						local root_dir = lspconfig_util.root_pattern(unpack(eslint_config_files))(fname)
+						local root_dir = vim.fs.root(fname, eslint_config_files)
 						if root_dir and project_has_local_eslint(root_dir) then
 							on_dir(root_dir)
 						end
@@ -462,6 +483,7 @@ require("lazy").setup({
 					cmd = { "pyright-langserver", "--stdio" },
 					filetypes = { "python" },
 					root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
+					single_file_support = true,
 					before_init = function(_, config)
 						local python_path = resolve_python_path(config.root_dir, vim.api.nvim_buf_get_name(0))
 						if python_path then
@@ -476,9 +498,7 @@ require("lazy").setup({
 							fname,
 							{ "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" }
 						)
-						if root_dir then
-							on_dir(root_dir)
-						end
+						on_dir(root_dir or vim.fs.dirname(fname))
 					end,
 					settings = {
 						python = {},

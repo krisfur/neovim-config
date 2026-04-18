@@ -42,6 +42,12 @@ On first launch:
 - LSPs install automatically via Mason (uses npm for pyright, typescript-language-server, etc.)
 - Treesitter parsers install automatically
 
+## Zed fallback
+
+This repo also includes a repo-managed Zed backup configuration under [`zed/`](./zed/README.md).
+
+Use that setup if you want a practical Vim-friendly fallback editor with similar search, LSP, formatting, and pane-navigation workflows, while keeping this Neovim config as the primary setup. The Zed workflow is intentionally not a literal Neovim keymap port, Python uses Zed-native tooling, Typst PDF generation is terminal-driven with `typst compile` / `typst watch`, and long lines are visually soft-wrapped to the editor width by default. See `zed/README.md` for the actual Zed-native workflow and tradeoffs.
+
 ## Keymaps
 
 | Keymap | Action |

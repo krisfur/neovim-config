@@ -1,0 +1,163 @@
+{
+  "vim_mode": true,
+  "base_keymap": "VSCode",
+  "theme": {
+    "mode": "dark",
+    "light": "Nord",
+    "dark": "Nord"
+  },
+  "theme_overrides": {
+    "Nord": {
+      "border": "#4c566a",
+      "border.focused": "#88c0d0",
+      "editor.active_line_number": "#aaffff",
+      "editor.line_number": "#6b7788",
+      "editor.active_line_background": "#343d4f",
+      "editor.document_highlight.read_background": "#3b4252",
+      "editor.document_highlight.write_background": "#434c5e",
+      "editor.search.match_background": "#3b4252",
+      "editor.search.match_border": "#aaffff",
+      "editor.search.match_selected_background": "#aaffff",
+      "editor.search.match_selected_border": "#aaffff",
+      "editor.subheader_background": "#2e3440",
+      "editor.gutter.background": "#2e3440",
+      "panel.background": "#2b303b",
+      "tab.active_background": "#2e3440",
+      "tab.inactive_background": "#242933",
+      "tab_bar.background": "#242933",
+      "terminal.background": "#2e3440",
+      "scrollbar.thumb.background": "#4c566a99",
+      "scrollbar.thumb.hover_background": "#88c0d099",
+      "syntax": {
+        "comment": {
+          "font_style": "normal"
+        },
+        "comment.doc": {
+          "font_style": "normal"
+        }
+      }
+    }
+  },
+  "auto_install_extensions": {
+    "nord": true,
+    "lua": true,
+    "swift": true,
+    "zig": true,
+    "odin": true,
+    "typst": true
+  },
+  "use_system_clipboard": "always",
+  "relative_line_numbers": "disabled",
+  "current_line_highlight": "all",
+  "vertical_scroll_margin": 10,
+  "tab_size": 4,
+  "hard_tabs": false,
+  "auto_indent": true,
+  "auto_indent_on_paste": true,
+  "show_whitespaces": "all",
+  "whitespace_map": {
+    "space": "·",
+    "tab": "»"
+  },
+  "soft_wrap": "editor_width",
+  "semantic_tokens": "combined",
+  "document_folding_ranges": "on",
+  "buffer_font_family": ".ZedMono",
+  "scrollbar": {
+    "diagnostics": "all"
+  },
+  "gutter": {
+    "line_numbers": true
+  },
+  "project_panel": {
+    "dock": "left",
+    "show_diagnostics": "all"
+  },
+  "tabs": {
+    "show_diagnostics": "all"
+  },
+  "toolbar": {
+    "breadcrumbs": true
+  },
+  "diagnostics": {
+    "inline": {
+      "enabled": false,
+      "max_severity": null
+    }
+  },
+  "languages": {
+    "C": {
+      "format_on_save": "off"
+    },
+    "C++": {
+      "format_on_save": "off"
+    },
+    "Go": {
+      "format_on_save": "on"
+    },
+    "JavaScript": {
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "format_on_save": "on"
+    },
+    "Lua": {
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "stylua",
+          "arguments": [
+            "--syntax=Lua54",
+            "--respect-ignores",
+            "--stdin-filepath",
+            "{buffer_path}",
+            "-"
+          ]
+        }
+      }
+    },
+    "Markdown": {
+      "format_on_save": "on"
+    },
+    "Python": {
+      "language_servers": [
+        "basedpyright",
+        "ruff",
+        "!pyright",
+        "!pyrefly",
+        "!pylsp",
+        "..."
+      ],
+      "format_on_save": "on",
+      "code_actions_on_format": {
+        "source.organizeImports.ruff": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "ruff"
+        }
+      }
+    },
+    "Rust": {
+      "format_on_save": "on"
+    },
+    "Swift": {
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "swiftformat",
+          "arguments": [
+            "--stdinpath",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "TypeScript": {
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "format_on_save": "on"
+    }
+  }
+}

@@ -13,6 +13,7 @@ sudo pacman -S --needed neovim nodejs npm tree-sitter-cli
 ```
 
 Clipboard (pick one):
+
 ```bash
 # Wayland
 sudo pacman -S wl-clipboard
@@ -38,25 +39,36 @@ nvim
 ```
 
 On first launch:
+
 - Plugins install automatically via lazy.nvim
 - LSPs install automatically via Mason (uses npm for pyright, typescript-language-server, etc.)
 - Treesitter parsers install automatically
 
+## Zed fallback
+
+This repo also includes a repo-managed Zed backup configuration under [`zed/`](./zed/README.md).
+
+Use that setup if you want a practical Vim-friendly fallback editor with similar search, LSP, formatting, and pane-navigation workflows, while keeping this Neovim config as the primary setup.
+
+The Zed workflow is intentionally not a literal Neovim keymap port, Python uses Zed-native tooling, Typst PDF generation is terminal-driven with `typst compile` / `typst watch`, Markdown filepath completion is still a known gap, and long lines are visually soft-wrapped to the editor width by default.
+
+See `zed/README.md` for the actual Zed-native workflow and tradeoffs.
+
 ## Keymaps
 
-| Keymap | Action |
-|--------|--------|
-| `<Space>sf` | Search files |
-| `<Space>sg` | Live grep (search text) |
-| `<Space>sw` | Search word under cursor |
-| `<Space>/` | Fuzzy search in current buffer |
-| `<Space><Space>` | Switch buffers |
-| `<Space>mp` | Markdown preview toggle |
-| `<Space>tp` | Typst preview toggle |
-| `<Space>f` | Format buffer |
-| `<Space>th` | Toggle inlay hints |
-| `gcc` | Comment out selection |
-| `grd` | Go to definition |
-| `grr` | Go to references |
-| `grn` | Rename symbol |
-| `gra` | Code action |
+| Keymap           | Action                         |
+| ---------------- | ------------------------------ |
+| `<Space>sf`      | Search files                   |
+| `<Space>sg`      | Live grep (search text)        |
+| `<Space>sw`      | Search word under cursor       |
+| `<Space>/`       | Fuzzy search in current buffer |
+| `<Space><Space>` | Switch buffers                 |
+| `<Space>mp`      | Markdown preview toggle        |
+| `<Space>tp`      | Typst preview toggle           |
+| `<Space>f`       | Format buffer                  |
+| `<Space>th`      | Toggle inlay hints             |
+| `gcc`            | Comment out selection          |
+| `grd`            | Go to definition               |
+| `grr`            | Go to references               |
+| `grn`            | Rename symbol                  |
+| `gra`            | Code action                    |

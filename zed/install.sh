@@ -48,7 +48,7 @@ case "$(uname -s)" in
     config_dir="${HOME}/.config/zed"
     ;;
   Darwin)
-    config_dir="${HOME}/Library/Application Support/Zed"
+    config_dir="${HOME}/.config/zed"
     ;;
   *)
     echo "Unsupported OS: $(uname -s). This installer only supports Linux and macOS." >&2

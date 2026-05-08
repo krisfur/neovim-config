@@ -33,6 +33,101 @@ vim.o.expandtab = true
 local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
 local tbl_unpack = table.unpack or unpack
 
+local function resolve_python_path(root_dir, file_path)
+	local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" }
+		or { ".venv", "bin", "python" }
+	local venv_python_subpath = is_windows and { "Scripts", "python.exe" } or { "bin", "python" }
+
+	local function executable_python_in(dir)
+		if type(dir) ~= "string" or dir == "" then
+			return nil
+		end
+
+		local python_path = vim.fs.joinpath(dir, tbl_unpack(python_subpath))
+		if vim.fn.executable(python_path) == 1 then
+			return python_path
+		end
+
+		return nil
+	end
+
+	local function executable_from_command(cmd, cwd)
+		if vim.fn.executable(cmd[1]) ~= 1 then
+			return nil
+		end
+
+		local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+		if result.code ~= 0 then
+			return nil
+		end
+
+		local python_path = vim.trim(result.stdout or "")
+		if python_path ~= "" and vim.fn.executable(python_path) == 1 then
+			return python_path
+		end
+
+		return nil
+	end
+
+	if type(root_dir) == "string" and root_dir ~= "" then
+		local root_python = executable_python_in(root_dir)
+		if root_python then
+			return root_python
+		end
+
+		local current_dir = vim.fs.dirname(root_dir)
+		while current_dir and current_dir ~= root_dir do
+			local parent_python = executable_python_in(current_dir)
+			if parent_python then
+				return parent_python
+			end
+
+			local parent_dir = vim.fs.dirname(current_dir)
+			if not parent_dir or parent_dir == current_dir then
+				break
+			end
+			current_dir = parent_dir
+		end
+
+		if type(file_path) == "string" and file_path ~= "" then
+			current_dir = vim.fs.dirname(file_path)
+			while current_dir and current_dir ~= root_dir do
+				local nested_python = executable_python_in(current_dir)
+				if nested_python then
+					return nested_python
+				end
+
+				local parent_dir = vim.fs.dirname(current_dir)
+				if not parent_dir or parent_dir == current_dir then
+					break
+				end
+				current_dir = parent_dir
+			end
+		end
+	end
+
+	local virtual_env = vim.env.VIRTUAL_ENV
+	if type(virtual_env) == "string" and virtual_env ~= "" then
+		local activated_python = vim.fs.joinpath(virtual_env, tbl_unpack(venv_python_subpath))
+		if vim.fn.executable(activated_python) == 1 then
+			return activated_python
+		end
+	end
+
+	local command_cwd = type(root_dir) == "string" and root_dir ~= "" and root_dir or nil
+	local uv_python = executable_from_command({ "uv", "python", "find" }, command_cwd)
+	if uv_python then
+		return uv_python
+	end
+
+	local mise_python = executable_from_command({ "mise", "which", "python" }, command_cwd)
+	if mise_python then
+		return mise_python
+	end
+
+	return nil
+end
+
 -- [[ Keymaps ]]
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
@@ -208,19 +303,9 @@ require("lazy").setup({
 			local lsp_highlight_group = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 			local lsp_detach_group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true })
 
-			---@param client vim.lsp.Client
-			---@param method vim.lsp.protocol.Method
-			---@param bufnr? integer
-			---@return boolean
-			local function client_supports_method(client, method, bufnr)
-				return client:supports_method(method, bufnr)
-			end
-
 			local function buffer_has_highlight_client(bufnr)
 				for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
-					if
-						client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, bufnr)
-					then
+					if client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, bufnr) then
 						return true
 					end
 				end
@@ -270,11 +355,7 @@ require("lazy").setup({
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					if
 						client
-						and client_supports_method(
-							client,
-							vim.lsp.protocol.Methods.textDocument_documentHighlight,
-							event.buf
-						)
+						and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
 					then
 						if not vim.b[event.buf].lsp_highlight_autocmds_enabled then
 							vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -295,7 +376,7 @@ require("lazy").setup({
 
 					if
 						client
-						and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
+						and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
 					then
 						map("<leader>th", function()
 							local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
@@ -371,101 +452,6 @@ require("lazy").setup({
 				return false
 			end
 
-			local function resolve_python_path(root_dir, file_path)
-				local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" }
-					or { ".venv", "bin", "python" }
-				local venv_python_subpath = is_windows and { "Scripts", "python.exe" } or { "bin", "python" }
-
-				local function executable_python_in(dir)
-					if type(dir) ~= "string" or dir == "" then
-						return nil
-					end
-
-					local python_path = vim.fs.joinpath(dir, tbl_unpack(python_subpath))
-					if vim.fn.executable(python_path) == 1 then
-						return python_path
-					end
-
-					return nil
-				end
-
-				local function executable_from_command(cmd, cwd)
-					if vim.fn.executable(cmd[1]) ~= 1 then
-						return nil
-					end
-
-					local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
-					if result.code ~= 0 then
-						return nil
-					end
-
-					local python_path = vim.trim(result.stdout or "")
-					if python_path ~= "" and vim.fn.executable(python_path) == 1 then
-						return python_path
-					end
-
-					return nil
-				end
-
-				if type(root_dir) == "string" and root_dir ~= "" then
-					local root_python = executable_python_in(root_dir)
-					if root_python then
-						return root_python
-					end
-
-					local current_dir = vim.fs.dirname(root_dir)
-					while current_dir and current_dir ~= root_dir do
-						local parent_python = executable_python_in(current_dir)
-						if parent_python then
-							return parent_python
-						end
-
-						local parent_dir = vim.fs.dirname(current_dir)
-						if not parent_dir or parent_dir == current_dir then
-							break
-						end
-						current_dir = parent_dir
-					end
-
-					if type(file_path) == "string" and file_path ~= "" then
-						current_dir = vim.fs.dirname(file_path)
-						while current_dir and current_dir ~= root_dir do
-							local nested_python = executable_python_in(current_dir)
-							if nested_python then
-								return nested_python
-							end
-
-							local parent_dir = vim.fs.dirname(current_dir)
-							if not parent_dir or parent_dir == current_dir then
-								break
-							end
-							current_dir = parent_dir
-						end
-					end
-				end
-
-				local virtual_env = vim.env.VIRTUAL_ENV
-				if type(virtual_env) == "string" and virtual_env ~= "" then
-					local activated_python = vim.fs.joinpath(virtual_env, tbl_unpack(venv_python_subpath))
-					if vim.fn.executable(activated_python) == 1 then
-						return activated_python
-					end
-				end
-
-				local command_cwd = type(root_dir) == "string" and root_dir ~= "" and root_dir or nil
-				local uv_python = executable_from_command({ "uv", "python", "find" }, command_cwd)
-				if uv_python then
-					return uv_python
-				end
-
-				local mise_python = executable_from_command({ "mise", "which", "python" }, command_cwd)
-				if mise_python then
-					return mise_python
-				end
-
-				return nil
-			end
-
 			-- Add LSP servers here
 			local servers = {
 				clangd = {},
@@ -504,8 +490,22 @@ require("lazy").setup({
 						python = {},
 					},
 				},
-				sourcekit = {
-					filetypes = { "swift" },
+				ruff = {
+					cmd = { "ruff", "server" },
+					filetypes = { "python" },
+					root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
+					init_options = {
+						settings = {
+							lint = {
+								extendIgnore = { "F401", "F821" },
+							},
+						},
+					},
+				},
+				tinymist = {
+					cmd = { "tinymist" },
+					filetypes = { "typst" },
+					root_markers = { "typst.toml", ".git" },
 				},
 				ts_ls = {},
 				rust_analyzer = {},
@@ -521,6 +521,11 @@ require("lazy").setup({
 					},
 				},
 			}
+			if not is_windows then
+				servers.sourcekit = {
+					filetypes = { "swift" },
+				}
+			end
 
 			local ensure_installed = {
 				"clangd",
@@ -547,29 +552,6 @@ require("lazy").setup({
 				vim.lsp.config(server_name, server)
 				vim.lsp.enable(server_name)
 			end
-
-			-- Set up ruff using vim.lsp.config (Neovim 0.11+)
-			vim.lsp.config("ruff", {
-				cmd = { "ruff", "server" },
-				filetypes = { "python" },
-				root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
-				init_options = {
-					settings = {
-						lint = {
-							extendIgnore = { "F401", "F821" },
-						},
-					},
-				},
-			})
-			vim.lsp.enable("ruff")
-
-			-- Set up tinymist for Typst
-			vim.lsp.config("tinymist", {
-				cmd = { "tinymist" },
-				filetypes = { "typst" },
-				root_markers = { "typst.toml", ".git" },
-			})
-			vim.lsp.enable("tinymist")
 		end,
 	},
 
@@ -623,7 +605,7 @@ require("lazy").setup({
 				"L3MON4D3/LuaSnip",
 				version = "2.*",
 				build = (function()
-					if vim.fn.has("win32") == 1 or vim.fn.executable("make") == 0 then
+					if is_windows or vim.fn.executable("make") == 0 then
 						return
 					end
 					return "make install_jsregexp"

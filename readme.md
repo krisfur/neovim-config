@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-Requires `neovim >= 0.11.x`
+Requires `neovim >= 0.12.x`
 
 ### Arch Linux
 

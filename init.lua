@@ -452,9 +452,32 @@ require("lazy").setup({
 				return false
 			end
 
+			-- Prefer a non-Mason clangd so its PCM format matches the system clang++
+			-- that built the project's modules (Mason's clangd lags brew/distro LLVM
+			-- and crashes loading mismatched .pcm files).
+			local function resolve_clangd()
+				local candidates = {
+					"/opt/homebrew/opt/llvm/bin/clangd", -- macOS arm64 brew
+					"/usr/local/opt/llvm/bin/clangd",    -- macOS x86 brew
+					"/usr/bin/clangd",                   -- Linux distro
+					"/usr/local/bin/clangd",             -- Linux manual install
+				}
+				for _, p in ipairs(candidates) do
+					if vim.fn.executable(p) == 1 then
+						return p
+					end
+				end
+				local on_path = vim.fn.exepath("clangd")
+				if on_path ~= "" and not on_path:match("/mason/") then
+					return on_path
+				end
+				return nil
+			end
+			local clangd_bin = resolve_clangd()
+
 			-- Add LSP servers here
 			local servers = {
-				clangd = {},
+				clangd = clangd_bin and { cmd = { clangd_bin } } or {},
 				eslint = {
 					root_dir = function(bufnr, on_dir)
 						local fname = vim.api.nvim_buf_get_name(bufnr)

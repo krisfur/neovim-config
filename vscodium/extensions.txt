@@ -13,7 +13,6 @@ DanielGavin.ols
 myriad-dreamin.tinymist
 esbenp.prettier-vscode
 Anthropic.claude-code
-github.vscode-github-actions
 mechatroner.rainbow-csv
 tomoki1207.pdf
 lucien-martijn.parquet-visualizer

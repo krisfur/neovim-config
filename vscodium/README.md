@@ -74,7 +74,6 @@ The installer pulls the following from `extensions.txt`:
 - `myriad-dreamin.tinymist`: Typst
 - `esbenp.prettier-vscode`: JS / TS / JSON / Markdown formatting
 - `Anthropic.claude-code`: Claude Code integration
-- `github.vscode-github-actions`: workflow YAML editing and run inspection
 - `mechatroner.rainbow-csv`: CSV column colouring and inline SQL-style querying
 - `tomoki1207.pdf`: in-editor PDF viewer (useful for Typst output)
 - `lucien-martijn.parquet-visualizer`: Parquet / CSV / Avro viewer with paginated tables, schema tab, and DuckDB SQL panel

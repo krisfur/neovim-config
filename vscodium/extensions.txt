@@ -1,0 +1,15 @@
+vscodevim.vim
+nuromirg.nightfox-theme-collections
+sumneko.lua
+JohnnyMorganz.stylua
+charliermarsh.ruff
+astral-sh.ty
+rust-lang.rust-analyzer
+golang.go
+swiftlang.swift-vscode
+vknabel.vscode-apple-swift-format
+ziglang.vscode-zig
+DanielGavin.ols
+myriad-dreamin.tinymist
+esbenp.prettier-vscode
+Anthropic.claude-code

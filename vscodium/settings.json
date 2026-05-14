@@ -1,0 +1,136 @@
+{
+  "workbench.colorTheme": "Nordfox",
+  "workbench.iconTheme": null,
+  "workbench.colorCustomizations": {
+    "[Nordfox]": {
+      "editorLineNumber.activeForeground": "#aaffff",
+      "editorLineNumber.foreground": "#6b7788",
+      "editor.lineHighlightBackground": "#343d4f",
+      "editor.wordHighlightBackground": "#3b4252",
+      "editor.wordHighlightStrongBackground": "#434c5e",
+      "editor.findMatchBackground": "#aaffff44",
+      "editor.findMatchHighlightBackground": "#3b4252",
+      "editorGutter.background": "#2e3440",
+      "tab.activeBackground": "#2e3440",
+      "tab.inactiveBackground": "#242933",
+      "editorGroupHeader.tabsBackground": "#242933",
+      "terminal.background": "#2e3440",
+      "scrollbarSlider.background": "#4c566a99",
+      "scrollbarSlider.hoverBackground": "#88c0d099",
+      "focusBorder": "#88c0d0",
+      "panel.background": "#2b303b"
+    }
+  },
+  "editor.fontFamily": ".ZedMono, Menlo, Monaco, 'Courier New', monospace",
+  "editor.lineNumbers": "on",
+  "editor.renderLineHighlight": "all",
+  "editor.cursorSurroundingLines": 10,
+  "editor.cursorSurroundingLinesStyle": "default",
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.autoIndent": "full",
+  "editor.formatOnPaste": true,
+  "editor.renderWhitespace": "all",
+  "editor.wordWrap": "on",
+  "editor.semanticHighlighting.enabled": true,
+  "editor.foldingStrategy": "auto",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": false,
+  "editor.minimap.enabled": false,
+  "editor.stickyScroll.enabled": false,
+  "workbench.sideBar.location": "left",
+  "workbench.tree.indent": 16,
+  "breadcrumbs.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "problems.decorations.enabled": true,
+  "explorer.decorations.badges": true,
+  "explorer.decorations.colors": true,
+
+  "vim.useSystemClipboard": true,
+  "vim.hlsearch": true,
+  "vim.incsearch": true,
+  "vim.useCtrlKeys": true,
+  "vim.normalModeKeyBindingsNonRecursive": [
+    { "before": ["<C-h>"], "commands": ["workbench.action.navigateLeft"] },
+    { "before": ["<C-j>"], "commands": ["workbench.action.navigateDown"] },
+    { "before": ["<C-k>"], "commands": ["workbench.action.navigateUp"] },
+    { "before": ["<C-l>"], "commands": ["workbench.action.navigateRight"] },
+    { "before": ["<leader>", "q"], "commands": ["workbench.actions.view.problems"] },
+    { "before": ["g", "A"], "commands": ["editor.action.goToReferences"] },
+    { "before": ["c", "d"], "commands": ["editor.action.rename"] },
+    { "before": ["g", "."], "commands": ["editor.action.quickFix"] }
+  ],
+  "vim.visualModeKeyBindingsNonRecursive": [
+    { "before": ["<C-h>"], "commands": ["workbench.action.navigateLeft"] },
+    { "before": ["<C-j>"], "commands": ["workbench.action.navigateDown"] },
+    { "before": ["<C-k>"], "commands": ["workbench.action.navigateUp"] },
+    { "before": ["<C-l>"], "commands": ["workbench.action.navigateRight"] }
+  ],
+  "vim.leader": "<space>",
+
+  "files.autoSave": "off",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  "editor.formatOnSave": true,
+
+  "[c]": { "editor.formatOnSave": false },
+  "[cpp]": { "editor.formatOnSave": false },
+
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go"
+  },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[lua]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JohnnyMorganz.stylua"
+  },
+  "stylua.styluaPath": null,
+  "stylua.searchParentDirectories": true,
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.ruff": "explicit",
+      "source.fixAll.ruff": "explicit"
+    }
+  },
+  "[rust]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "[swift]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "vknabel.vscode-apple-swift-format"
+  },
+
+  "python.languageServer": "None",
+  "ty.importStrategy": "fromEnvironment",
+
+  "go.formatTool": "gofmt",
+  "rust-analyzer.check.command": "clippy"
+}

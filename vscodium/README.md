@@ -37,6 +37,16 @@ To skip extension installation:
 ./vscodium/install.sh --skip-extensions
 ```
 
+### Updating Extensions
+
+VSCodium's "Check for Extension Updates" relies on Open VSX's gallery endpoint (`/vscode/gallery/{pub}/{name}/latest`), which currently serves stale "latest" data for some publishers — so newer versions silently fail to auto-update. Run the helper script to sync against Open VSX's REST endpoint, which is fresh:
+
+```bash
+./vscodium/update-extensions.sh
+```
+
+Requires `jq` (`brew install jq`). The script installs the actually-latest version via `@version --force` and then clears the `pinned` flag in `extensions.json` so auto-update can resume for that extension once Open VSX's gallery endpoint catches up.
+
 ## External Tools
 
 Expected tools on `PATH`:

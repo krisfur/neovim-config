@@ -21,7 +21,7 @@
       "panel.background": "#2b303b"
     }
   },
-  "editor.fontFamily": ".ZedMono, Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
   "editor.lineNumbers": "on",
   "editor.renderLineHighlight": "all",
   "editor.cursorSurroundingLines": 10,
@@ -55,7 +55,10 @@
     { "before": ["<C-j>"], "commands": ["workbench.action.navigateDown"] },
     { "before": ["<C-k>"], "commands": ["workbench.action.navigateUp"] },
     { "before": ["<C-l>"], "commands": ["workbench.action.navigateRight"] },
-    { "before": ["<leader>", "q"], "commands": ["workbench.actions.view.problems"] },
+    {
+      "before": ["<leader>", "q"],
+      "commands": ["workbench.actions.view.problems"]
+    },
     { "before": ["g", "A"], "commands": ["editor.action.goToReferences"] },
     { "before": ["c", "d"], "commands": ["editor.action.rename"] },
     { "before": ["g", "."], "commands": ["editor.action.quickFix"] }

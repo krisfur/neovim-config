@@ -130,10 +130,16 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "vknabel.vscode-apple-swift-format"
   },
+  "[zig]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ziglang.vscode-zig"
+  },
 
   "python.languageServer": "None",
   "ty.importStrategy": "fromEnvironment",
 
   "go.formatTool": "gofmt",
-  "rust-analyzer.check.command": "clippy"
+  "rust-analyzer.check.command": "clippy",
+  "zig.zls.enabled": "on",
+  "zig.formattingProvider": "zls"
 }

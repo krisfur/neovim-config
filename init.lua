@@ -31,6 +31,102 @@ vim.o.shiftwidth = 4
 vim.o.expandtab = true
 
 local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
+local tbl_unpack = table.unpack or unpack
+
+local function resolve_python_path(root_dir, file_path)
+	local python_subpath = is_windows and { ".venv", "Scripts", "python.exe" }
+		or { ".venv", "bin", "python" }
+	local venv_python_subpath = is_windows and { "Scripts", "python.exe" } or { "bin", "python" }
+
+	local function executable_python_in(dir)
+		if type(dir) ~= "string" or dir == "" then
+			return nil
+		end
+
+		local python_path = vim.fs.joinpath(dir, tbl_unpack(python_subpath))
+		if vim.fn.executable(python_path) == 1 then
+			return python_path
+		end
+
+		return nil
+	end
+
+	local function executable_from_command(cmd, cwd)
+		if vim.fn.executable(cmd[1]) ~= 1 then
+			return nil
+		end
+
+		local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+		if result.code ~= 0 then
+			return nil
+		end
+
+		local python_path = vim.trim(result.stdout or "")
+		if python_path ~= "" and vim.fn.executable(python_path) == 1 then
+			return python_path
+		end
+
+		return nil
+	end
+
+	if type(root_dir) == "string" and root_dir ~= "" then
+		local root_python = executable_python_in(root_dir)
+		if root_python then
+			return root_python
+		end
+
+		local current_dir = vim.fs.dirname(root_dir)
+		while current_dir and current_dir ~= root_dir do
+			local parent_python = executable_python_in(current_dir)
+			if parent_python then
+				return parent_python
+			end
+
+			local parent_dir = vim.fs.dirname(current_dir)
+			if not parent_dir or parent_dir == current_dir then
+				break
+			end
+			current_dir = parent_dir
+		end
+
+		if type(file_path) == "string" and file_path ~= "" then
+			current_dir = vim.fs.dirname(file_path)
+			while current_dir and current_dir ~= root_dir do
+				local nested_python = executable_python_in(current_dir)
+				if nested_python then
+					return nested_python
+				end
+
+				local parent_dir = vim.fs.dirname(current_dir)
+				if not parent_dir or parent_dir == current_dir then
+					break
+				end
+				current_dir = parent_dir
+			end
+		end
+	end
+
+	local virtual_env = vim.env.VIRTUAL_ENV
+	if type(virtual_env) == "string" and virtual_env ~= "" then
+		local activated_python = vim.fs.joinpath(virtual_env, tbl_unpack(venv_python_subpath))
+		if vim.fn.executable(activated_python) == 1 then
+			return activated_python
+		end
+	end
+
+	local command_cwd = type(root_dir) == "string" and root_dir ~= "" and root_dir or nil
+	local uv_python = executable_from_command({ "uv", "python", "find" }, command_cwd)
+	if uv_python then
+		return uv_python
+	end
+
+	local mise_python = executable_from_command({ "mise", "which", "python" }, command_cwd)
+	if mise_python then
+		return mise_python
+	end
+
+	return nil
+end
 
 -- [[ Keymaps ]]
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
@@ -397,13 +493,34 @@ require("lazy").setup({
 					filetypes = { "python" },
 					root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
 					single_file_support = true,
+					before_init = function(_, config)
+						local python_path = resolve_python_path(config.root_dir, vim.api.nvim_buf_get_name(0))
+						if python_path then
+							local venv_root = vim.fs.dirname(vim.fs.dirname(python_path))
+							config.cmd_env = vim.tbl_extend("force", config.cmd_env or {}, {
+								VIRTUAL_ENV = venv_root,
+							})
+							config.settings = vim.tbl_deep_extend("force", config.settings or {}, {
+								ty = {
+									configuration = {
+										environment = { python = venv_root },
+									},
+								},
+							})
+						end
+					end,
 					root_dir = function(bufnr, on_dir)
 						local fname = vim.api.nvim_buf_get_name(bufnr)
-						local root_dir = vim.fs.root(
+						-- Walk up past nested package pyprojects to the outermost
+						-- project root (the one with .venv / .git), so monorepos
+						-- like ds-misc/dsaccesstools attach to the parent venv.
+						local markers = { ".venv", ".git" }
+						local outer = vim.fs.root(fname, markers)
+						local fallback = vim.fs.root(
 							fname,
-							{ "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" }
+							{ "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt" }
 						)
-						on_dir(root_dir or vim.fs.dirname(fname))
+						on_dir(outer or fallback or vim.fs.dirname(fname))
 					end,
 				},
 				ruff = {

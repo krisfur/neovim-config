@@ -11,7 +11,6 @@ ziglang.vscode-zig
 DanielGavin.ols
 myriad-dreamin.tinymist
 esbenp.prettier-vscode
-Anthropic.claude-code
 tomoki1207.pdf
 lucien-martijn.parquet-visualizer
 ms-toolsai.jupyter

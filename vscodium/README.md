@@ -1,6 +1,8 @@
 # VSCodium Fallback Setup
 
-This directory contains a repo-managed VSCodium configuration intended as a practical backup to the Neovim setup in this repository. It mirrors the sibling Zed fallback as closely as VSCodium allows.
+This directory contains a repo-managed VSCodium configuration intended as a practical backup to the Neovim setup in this repository. 
+
+It mirrors the sibling Zed fallback as closely as VSCodium allows.
 
 ![screenshot](./vscodium.png)
 
@@ -83,7 +85,6 @@ The installer pulls the following from `extensions.txt`:
 - `DanielGavin.ols`: Odin
 - `myriad-dreamin.tinymist`: Typst
 - `esbenp.prettier-vscode`: JS / TS / JSON / Markdown formatting
-- `Anthropic.claude-code`: Claude Code integration
 - `mechatroner.rainbow-csv`: CSV column colouring and inline SQL-style querying
 - `tomoki1207.pdf`: in-editor PDF viewer (useful for Typst output)
 - `lucien-martijn.parquet-visualizer`: Parquet / CSV / Avro viewer with paginated tables, schema tab, and DuckDB SQL panel
@@ -114,6 +115,3 @@ Vim motions are provided by VSCodeVim. The keybindings layer adds `ctrl-hjkl` fo
 ## Known gaps
 
 - No integrated Typst preview workflow beyond what `tinymist` provides; `typst compile` / `typst watch` from the terminal remains the supported path.
-- Python: `ty` is still pre-release; if it misbehaves, disable the extension and fall back to ruff alone.
-- Markdown link / image path completion is not configured.
-- No `tasks.json` is shipped; use the integrated terminal for build commands.

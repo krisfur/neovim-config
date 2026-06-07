@@ -93,6 +93,10 @@ install_one "config.toml"
 install_one "languages.toml"
 # config.toml sets `theme = "custom"`, which Helix loads from themes/custom.toml.
 install_one "custom.toml" "themes/custom.toml"
+# Markdown preview helper + its dark stylesheet (bound to Space-m in config.toml).
+install_one "md-preview.sh"
+install_one "markdown-dark.css"
+chmod +x "${config_dir}/md-preview.sh"
 
 echo
 echo "Installed Helix config into: ${config_dir}"

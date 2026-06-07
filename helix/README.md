@@ -23,11 +23,13 @@ nordfox theme with the `#aaffff` accent.
 
 ## Files
 
-| File            | Installed to                          |
-| --------------- | ------------------------------------- |
-| `config.toml`   | `~/.config/helix/config.toml`         |
-| `languages.toml`| `~/.config/helix/languages.toml`      |
-| `custom.toml`   | `~/.config/helix/themes/custom.toml`  |
+| File               | Installed to                          |
+| ------------------ | ------------------------------------- |
+| `config.toml`      | `~/.config/helix/config.toml`         |
+| `languages.toml`   | `~/.config/helix/languages.toml`      |
+| `custom.toml`      | `~/.config/helix/themes/custom.toml`  |
+| `md-preview.sh`    | `~/.config/helix/md-preview.sh`       |
+| `markdown-dark.css`| `~/.config/helix/markdown-dark.css`   |
 
 ## Install the config
 
@@ -41,9 +43,9 @@ to see which language servers and formatters Helix can find on your `PATH`.
 
 ## External tools
 
-Helix itself plus the language servers and formatters used by `languages.toml`.
-Everything except `mdpls` (a git-only cargo crate) is in Homebrew core; `mise` covers
-most of the same tools on Linux via its registry, with ecosystem backends for the rest.
+Helix itself plus the language servers and formatters used by `languages.toml`, and
+`pandoc` for the markdown preview. Everything is in Homebrew core; `mise` covers most of
+the same tools on Linux via its registry, with ecosystem backends for the rest.
 
 ### macOS (Homebrew)
 
@@ -55,14 +57,11 @@ brew install helix \
   rust-analyzer gopls zls ols tinymist marksman \
   llvm \
   swiftformat \
-  node uv
+  node uv \
+  pandoc          # markdown preview (Space-m)
 
 # Node-based servers and formatter (typescript, eslint, prettier, json)
 pnpm install -g typescript typescript-language-server prettier vscode-langservers-extracted
-
-# Optional: markdown browser preview (the markdown-preview.nvim replacement)
-# Not published to crates.io, install from the git repo:
-cargo install --git https://github.com/euclio/mdpls
 ```
 
 `sourcekit-lsp` ships with Xcode / the Swift toolchain on macOS, no separate install.
@@ -76,13 +75,10 @@ path (e.g. `/opt/homebrew/opt/llvm/bin/clangd`) if you need to match a system cl
 mise use -g helix
 
 # Language servers / formatters available in the mise registry
-mise use -g rust-analyzer gopls zls ruff ty stylua marksman lua-language-server tinymist node
+mise use -g rust-analyzer gopls zls ruff ty stylua marksman lua-language-server tinymist node pandoc
 
 # Things not in the registry, via mise backends
 mise use -g ubi:DanielGavin/ols               # odin language server
-
-# Optional markdown browser preview (not on crates.io, install from git)
-cargo install --git https://github.com/euclio/mdpls
 
 # Node-based servers and formatter
 pnpm install -g typescript typescript-language-server prettier vscode-langservers-extracted
@@ -97,6 +93,20 @@ version, run `mise registry | grep <tool>` to find it, or fall back to a backend
 > point and lean on `hx --health` and `mise registry` to confirm what is actually
 > resolvable on your machine.
 
+## Markdown preview
+
+Press `Space m` in a markdown buffer. `md-preview.sh` renders the current file to a
+dark-themed, self-contained HTML file with `pandoc` and opens it in your default
+browser. It is offline and on-demand: nothing launches automatically, and there is no
+live reload, so press `Space m` again to refresh after saving.
+
+The original `mdpls` language server was dropped because Helix can only auto-launch it
+(its preview is a `workspace/executeCommand`, which Helix has no way to trigger), and it
+themes only code blocks, not the page. The pandoc approach trades live reload for manual
+control, full dark mode (`markdown-dark.css`), and no network dependency.
+
+Tweak the styling in `markdown-dark.css`. On Linux the script uses `xdg-open`.
+
 ## Python projects
 
 `ty` and `ruff` auto-discover a project `.venv` or honour `VIRTUAL_ENV`. Launch `hx`
@@ -107,13 +117,26 @@ from the project root, or use `uv run hx`, so they attach to the right interpret
 | Keymap            | Action                                  |
 | ----------------- | --------------------------------------- |
 | `Ctrl-h/j/k/l`    | Move focus between split views          |
+| `{` / `}`         | Jump to prev / next paragraph (extends in select mode) |
+| `Space e` / `E`   | File explorer: current file's dir / workspace root (netrw `:Ex`) |
+| `Space m`         | Markdown preview in browser (pandoc)    |
 | `Space q`         | Diagnostics picker (mirrors `<leader>q`)|
 | `Space f`         | File picker (built-in)                  |
-| `Space /`         | Global search (built-in)                |
+| `Space /`         | Project-wide search, regex (= nvim `<Space>sg`); type a pattern, results fill in |
+| `/`               | Search within the current buffer, regex; `n`/`N` to step (= nvim `<Space>/`) |
 | `Space s` / `S`   | Document / workspace symbol pickers     |
 | `Space d` / `D`   | Document / workspace diagnostics        |
 | `Space k`         | Hover docs (built-in)                   |
 | `g d` / `g r`     | Goto definition / references (built-in) |
+| `g a`             | Go to last accessed file (netrw `:Rex`-ish) |
+
+There is no `:Ex` / `:Rex` typed command (Helix has no custom command aliases); the
+explorer is on `Space e`, and `Esc` or `g a` takes you back to your file.
+
+Note: in nvim `<Space>/` was a fuzzy search inside the current buffer. Helix has no
+fuzzy current-buffer picker, just regex search with `/`. `Space /` is the project-wide
+grep (your nvim `<Space>sg`); with an empty prompt it shows `0/0` until you type a
+pattern, and the right-hand pane previews the selected match.
 
 See `:tutor` and the [Helix keymap docs](https://docs.helix-editor.com/keymap.html)
 for the full default set.

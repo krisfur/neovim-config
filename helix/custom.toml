@@ -1,20 +1,178 @@
 # ~/.config/helix/themes/custom.toml
 #
-# Approximates your nordfox + #aaffff accent setup by inheriting the built-in
-# nord theme and layering your overrides on top.
+# A port of nightfox.nvim's "nordfox" palette to Helix, mirroring the actual
+# nordfox scope -> colour assignments (not the muted original Nord), plus the
+# #aaffff accent overrides from the Neovim config (CursorLineNr, MatchParen,
+# inline markdown code).
 
-inherits = "nord"
+# ---------------------------------------------------------------- Syntax
 
-"ui.linenr.selected"    = { fg = "#aaffff", modifiers = ["bold"] }   # CursorLineNr
-"ui.cursor.match"       = { fg = "#aaffff", modifiers = ["bold"] }   # MatchParen
-"ui.selection"         = { bg = "#3b4252" }                          # Visual
-"ui.selection.primary" = { bg = "#434c5e" }
-"ui.cursorline.primary" = { bg = "#3b4252" }
+"comment"                  = "comment"
 
-"markup.raw.inline"     = { fg = "#ebcb8b" }                         # inline `code` in markdown
+"constant"                 = "orange_bright"
+"constant.builtin"         = "orange_bright"
+"constant.builtin.boolean" = "orange_bright"
+"constant.character"       = "orange_bright"
+"constant.character.escape"= "yellow_bright"
+"constant.numeric"         = "orange"
 
-# NOTES on things that don't map:
-#  - Search / IncSearch: Helix search works via jump-and-select rather than a
-#    persistent highlight, so there's no Search/IncSearch scope to recolour.
-#  - jsonQuote -> String: JSON quotes are `punctuation` in Helix; recolouring
-#    them would affect punctuation everywhere, so it's left alone.
+"string"                   = "green"
+"string.regexp"            = "yellow_bright"
+"string.special"           = "yellow_bright"
+
+"type"                     = "yellow"
+"type.builtin"             = "cyan_bright"
+"type.enum.variant"        = "orange_bright"
+"constructor"              = "cyan"
+
+"function"                 = "blue_bright"
+"function.builtin"         = "blue_bright"
+"function.method"          = "blue_bright"
+"function.macro"           = "pink_bright"
+"function.special"         = "pink_bright"
+
+"keyword"                  = "magenta"
+"keyword.control"          = "magenta"
+"keyword.control.conditional" = "magenta_bright"
+"keyword.control.repeat"   = "magenta_bright"
+"keyword.control.import"   = "magenta"
+"keyword.control.return"   = "magenta"
+"keyword.control.exception"= "magenta_bright"
+"keyword.operator"         = "magenta"
+"keyword.directive"        = "pink_bright"
+"keyword.function"         = "magenta"
+"keyword.storage"          = "magenta"
+
+"operator"                 = "fg2"
+
+"punctuation"              = "fg2"
+"punctuation.bracket"      = "fg2"
+"punctuation.delimiter"    = "fg2"
+"punctuation.special"      = "magenta"
+
+"variable"                 = "white"
+"variable.builtin"         = "red"
+"variable.parameter"       = "white"
+"variable.other.member"    = "blue"
+
+"label"                    = "magenta"
+"namespace"                = "cyan"
+"special"                  = "pink_bright"
+"attribute"                = "pink_bright"
+"tag"                      = "magenta"
+
+# ---------------------------------------------------------------- Markup (markdown)
+
+"markup.heading"           = { fg = "blue_bright", modifiers = ["bold"] }
+"markup.heading.marker"    = "fg3"
+"markup.list"              = "orange"
+"markup.bold"              = { modifiers = ["bold"] }
+"markup.italic"            = { modifiers = ["italic"] }
+"markup.strikethrough"     = { modifiers = ["crossed_out"] }
+"markup.link.url"          = { fg = "cyan", modifiers = ["underlined"] }
+"markup.link.text"         = "blue_bright"
+"markup.link.label"        = "magenta"
+"markup.quote"             = "comment"
+"markup.raw"               = "yellow"
+"markup.raw.inline"        = "yellow"   # inline `code` accent from the nvim config
+
+# ---------------------------------------------------------------- UI
+
+"ui.background"            = { fg = "fg1", bg = "bg1" }
+"ui.text"                 = "fg1"
+"ui.text.focus"          = "white"
+"ui.text.inactive"       = "fg3"
+
+"ui.cursor"              = { fg = "bg0", bg = "fg2" }
+"ui.cursor.primary"     = { fg = "bg0", bg = "fg0" }
+"ui.cursor.match"       = { fg = "accent", modifiers = ["bold"] }   # MatchParen
+
+"ui.cursorline.primary" = { bg = "bg2" }
+
+"ui.linenr"             = "fg3"
+"ui.linenr.selected"    = { fg = "accent", modifiers = ["bold"] }   # CursorLineNr
+
+"ui.gutter"             = { bg = "bg1" }
+
+"ui.selection"          = { bg = "sel0" }
+"ui.selection.primary"  = { bg = "sel1" }
+
+"ui.statusline"          = { fg = "fg2", bg = "bg0" }
+"ui.statusline.inactive" = { fg = "fg3", bg = "bg0" }
+"ui.statusline.normal"   = { fg = "bg0", bg = "blue_bright", modifiers = ["bold"] }
+"ui.statusline.insert"   = { fg = "bg0", bg = "green", modifiers = ["bold"] }
+"ui.statusline.select"   = { fg = "bg0", bg = "magenta", modifiers = ["bold"] }
+
+"ui.popup"              = { fg = "fg1", bg = "bg0" }
+"ui.popup.info"         = { fg = "fg1", bg = "bg0" }
+"ui.window"             = "bg4"
+"ui.help"               = { fg = "fg1", bg = "bg0" }
+
+"ui.menu"               = { fg = "fg1", bg = "bg0" }
+"ui.menu.selected"      = { fg = "white", bg = "sel1" }
+"ui.menu.scroll"        = { fg = "fg3", bg = "bg2" }
+
+"ui.virtual.whitespace"   = "fg3"
+"ui.virtual.indent-guide" = "bg3"
+"ui.virtual.ruler"        = { bg = "bg2" }
+"ui.virtual.inlay-hint"   = "comment"
+"ui.virtual.jump-label"   = { fg = "accent", modifiers = ["bold"] }
+
+"ui.bufferline"         = { fg = "fg2", bg = "bg0" }
+"ui.bufferline.active"  = { fg = "white", bg = "bg1" }
+
+# ---------------------------------------------------------------- Diagnostics
+
+"diagnostic"           = { underline = { color = "fg3", style = "curl" } }
+"diagnostic.error"     = { underline = { color = "red", style = "curl" } }
+"diagnostic.warning"   = { underline = { color = "yellow", style = "curl" } }
+"diagnostic.info"      = { underline = { color = "blue", style = "curl" } }
+"diagnostic.hint"      = { underline = { color = "green", style = "curl" } }
+"diagnostic.unnecessary" = { modifiers = ["dim"] }
+"diagnostic.deprecated"  = { modifiers = ["crossed_out"] }
+"error"                = "red"
+"warning"              = "yellow"
+"info"                 = "blue"
+"hint"                 = "green"
+
+# ---------------------------------------------------------------- Diffs
+
+"diff.plus"            = "green"
+"diff.minus"           = "red"
+"diff.delta"           = "yellow"
+
+# ---------------------------------------------------------------- Palette (nordfox)
+
+[palette]
+bg0  = "#232831"
+bg1  = "#2e3440"
+bg2  = "#39404f"
+bg3  = "#444c5e"
+bg4  = "#5a657d"
+fg0  = "#c7cdd9"
+fg1  = "#cdcecf"
+fg2  = "#abb1bb"
+fg3  = "#7e8188"
+sel0 = "#3e4a5b"
+sel1 = "#4f6074"
+comment = "#60728a"
+
+red            = "#bf616a"
+red_bright     = "#d06f79"
+green          = "#a3be8c"
+green_bright   = "#b1d196"
+yellow         = "#ebcb8b"
+yellow_bright  = "#f0d399"
+blue           = "#81a1c1"
+blue_bright    = "#8cafd2"
+magenta        = "#b48ead"
+magenta_bright = "#c895bf"
+cyan           = "#88c0d0"
+cyan_bright    = "#93ccdc"
+white          = "#e5e9f0"
+orange         = "#c9826b"
+orange_bright  = "#d89079"
+pink           = "#bf88bc"
+pink_bright    = "#d092ce"
+
+accent         = "#aaffff"

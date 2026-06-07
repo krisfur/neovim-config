@@ -40,14 +40,9 @@ command = "ols"
 [language-server.sourcekit-lsp]
 command = "sourcekit-lsp"
 
-# Markdown live browser preview (the markdown-preview.nvim replacement).
-# Install: cargo install mdpls
-[language-server.mdpls]
-command = "mdpls"
-
-[language-server.mdpls.config.markdown.preview]
-auto = true                 # opens the browser preview automatically on file open
-browser = "firefox"         # change to your browser: "open -a Safari", "google-chrome", "xdg-open", ...
+# Markdown preview is not an LSP here. mdpls (the only LSP option) can only be
+# auto-launched in Helix, so it is replaced by an on-demand pandoc render bound
+# to Space-m (see config.toml + md-preview.sh). Manual, dark-themed, offline.
 
 # lua-language-server is a built-in default; we just push your callSnippet setting.
 [language-server.lua-language-server.config.Lua.completion]
@@ -142,4 +137,4 @@ auto-format = false
 
 [[language]]
 name = "markdown"
-language-servers = ["marksman", "mdpls"]
+language-servers = ["marksman"]

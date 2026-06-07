@@ -54,6 +54,14 @@ The Zed workflow is intentionally not a literal Neovim keymap port, Python uses 
 
 See `zed/README.md` for the actual Zed-native workflow and tradeoffs.
 
+## Helix fallback
+
+This repo also includes a repo-managed Helix configuration under [`helix/`](./helix/README.md).
+
+It is a minimal port that reuses the same language servers and formatters, format-on-save, `Ctrl-h/j/k/l` pane navigation, the `Space` leader pickers, and an approximation of the nordfox theme. Helix ships its own LSP client, fuzzy pickers, and tree-sitter support, so most of the Neovim plugins have no equivalent to install, they are just editor features here.
+
+Install with `./helix/install.sh`. See `helix/README.md` for the external tools to install (Homebrew on macOS, mise on Linux) and what does not map across.
+
 ## Keymaps
 
 | Keymap           | Action                         |

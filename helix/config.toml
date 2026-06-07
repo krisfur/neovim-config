@@ -1,0 +1,66 @@
+# ~/.config/helix/config.toml
+
+theme = "custom"   # see themes/custom.toml below; swap for a built-in like "nord" if you prefer
+
+[editor]
+line-number = "absolute"     # relativenumber = false
+mouse = true
+cursorline = true
+scrolloff = 10
+idle-timeout = 250           # ~ updatetime (ms before hover/diagnostics popups)
+color-modes = true           # statusline tints with the current mode
+true-color = true
+# NOTE: Helix has no persistent-undo (undofile) equivalent — undo history is per-session.
+# NOTE: there is no `clipboard = unnamedplus`. Yank to the system clipboard with "+y and
+#       paste with "+p, or uncomment the keymaps at the bottom to make y/p use it by default.
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "position", "file-encoding", "file-type"]
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.lsp]
+display-messages = true      # progress messages, the fidget.nvim role
+display-inlay-hints = true   # inlay hints on by default (you had a toggle; this is always-on)
+
+[editor.indent-guides]
+render = true
+
+# listchars equivalent
+[editor.whitespace]
+render = { tab = "all", trailing = "all", nbsp = "all" }
+
+[editor.whitespace.characters]
+tab = "»"
+trailing = "·"
+nbsp = "␣"
+
+[editor.soft-wrap]
+enable = false               # set true (+ optional max-wrap) for breakindent-style wrapping
+
+# ignorecase + smartcase, combined into one switch
+[editor.search]
+smart-case = true
+
+# Ctrl-h/j/k/l window navigation
+[keys.normal]
+C-h = "jump_view_left"
+C-j = "jump_view_down"
+C-k = "jump_view_up"
+C-l = "jump_view_right"
+
+[keys.normal.space]
+q = "diagnostics_picker"     # ~ <leader>q (Space-d / Space-D are the built-in doc/workspace diagnostics)
+
+# --- Optional: make yank/paste use the system clipboard by default (unnamedplus-ish) ---
+# [keys.normal]
+# y = ["yank_to_clipboard"]
+# p = ["paste_clipboard_after"]
+# P = ["paste_clipboard_before"]
+# [keys.select]
+# y = ["yank_to_clipboard"]

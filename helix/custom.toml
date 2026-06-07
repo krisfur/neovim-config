@@ -1,0 +1,20 @@
+# ~/.config/helix/themes/custom.toml
+#
+# Approximates your nordfox + #aaffff accent setup by inheriting the built-in
+# nord theme and layering your overrides on top.
+
+inherits = "nord"
+
+"ui.linenr.selected"    = { fg = "#aaffff", modifiers = ["bold"] }   # CursorLineNr
+"ui.cursor.match"       = { fg = "#aaffff", modifiers = ["bold"] }   # MatchParen
+"ui.selection"         = { bg = "#3b4252" }                          # Visual
+"ui.selection.primary" = { bg = "#434c5e" }
+"ui.cursorline.primary" = { bg = "#3b4252" }
+
+"markup.raw.inline"     = { fg = "#ebcb8b" }                         # inline `code` in markdown
+
+# NOTES on things that don't map:
+#  - Search / IncSearch: Helix search works via jump-and-select rather than a
+#    persistent highlight, so there's no Search/IncSearch scope to recolour.
+#  - jsonQuote -> String: JSON quotes are `punctuation` in Helix; recolouring
+#    them would affect punctuation everywhere, so it's left alone.

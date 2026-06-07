@@ -1,0 +1,145 @@
+# ~/.config/helix/languages.toml
+#
+# TOML ordering note: keep every [language-server.*] block ABOVE the first
+# [[language]] block. Mixing them can trip Helix's parser.
+
+# ============================ Language servers ============================
+
+# Python: ty (types) + ruff (lint). Both auto-discover .venv at the project
+# root or honour VIRTUAL_ENV — no path-resolution logic needed. Launch `hx`
+# from the project root, or `uv run hx` to be explicit. No shell sourcing.
+[language-server.ty]
+command = "ty"
+args = ["server"]
+
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
+
+[language-server.ruff.config.settings.lint]
+extendIgnore = ["F401", "F821"]
+
+# ESLint. Helix's eslint setup is finicky and often needs per-project tweaks;
+# this is a sane baseline. It will no-op quietly in projects with no eslint config.
+[language-server.eslint]
+command = "vscode-eslint-language-server"
+args = ["--stdio"]
+
+[language-server.eslint.config]
+validate = "on"
+experimental = { useFlatConfig = true }
+workingDirectory = { mode = "auto" }
+codeActionOnSave = { enable = false }
+
+[language-server.tinymist]
+command = "tinymist"
+
+[language-server.ols]
+command = "ols"
+
+[language-server.sourcekit-lsp]
+command = "sourcekit-lsp"
+
+# Markdown live browser preview (the markdown-preview.nvim replacement).
+# Install: cargo install mdpls
+[language-server.mdpls]
+command = "mdpls"
+
+[language-server.mdpls.config.markdown.preview]
+auto = true                 # opens the browser preview automatically on file open
+browser = "firefox"         # change to your browser: "open -a Safari", "google-chrome", "xdg-open", ...
+
+# lua-language-server is a built-in default; we just push your callSnippet setting.
+[language-server.lua-language-server.config.Lua.completion]
+callSnippet = "Replace"
+
+# clangd is a built-in default. To force a system clangd (your PCM/modules note),
+# point command at a full path instead of relying on $PATH.
+[language-server.clangd]
+command = "clangd"
+# command = "/opt/homebrew/opt/llvm/bin/clangd"   # macOS arm64 brew, for example
+
+# ============================ Languages ============================
+
+[[language]]
+name = "python"
+language-servers = ["ty", "ruff"]
+formatter = { command = "ruff", args = ["format", "-"] }
+auto-format = true
+roots = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".venv", ".git"]
+
+[[language]]
+name = "lua"
+formatter = { command = "stylua", args = ["-"] }
+auto-format = true
+
+[[language]]
+name = "typescript"
+language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "javascript"
+language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+auto-format = true
+
+[[language]]
+name = "jsx"
+language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+auto-format = true
+
+[[language]]
+name = "json"
+formatter = { command = "prettier", args = ["--parser", "json"] }
+auto-format = true
+
+[[language]]
+name = "rust"
+auto-format = true          # rust-analyzer + rustfmt are the built-in defaults
+
+[[language]]
+name = "go"
+auto-format = true          # gopls handles formatting
+
+[[language]]
+name = "zig"
+auto-format = true          # zls is the built-in default
+
+[[language]]
+name = "odin"
+language-servers = ["ols"]
+
+[[language]]
+name = "typst"
+language-servers = ["tinymist"]
+roots = ["typst.toml", ".git"]
+
+[[language]]
+name = "swift"
+language-servers = ["sourcekit-lsp"]
+formatter = { command = "swiftformat", args = ["--quiet"] }
+auto-format = true
+# swiftformat reads piped stdin and writes stdout. If save misbehaves,
+# set auto-format = false and run swiftformat manually, or adjust args.
+
+# You disabled format-on-save for C/C++ in conform — mirrored here.
+[[language]]
+name = "c"
+auto-format = false
+
+[[language]]
+name = "cpp"
+auto-format = false
+
+[[language]]
+name = "markdown"
+language-servers = ["marksman", "mdpls"]

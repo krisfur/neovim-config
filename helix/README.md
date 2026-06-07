@@ -112,6 +112,23 @@ Tweak the styling in `markdown-dark.css`. On Linux the script uses `xdg-open`.
 `ty` and `ruff` auto-discover a project `.venv` or honour `VIRTUAL_ENV`. Launch `hx`
 from the project root, or use `uv run hx`, so they attach to the right interpreter.
 
+## Coming from Vim
+
+Helix is selection-first (the Kakoune model), not Vim's operator-then-motion. This is
+the biggest adjustment and is intentional, not a misconfiguration:
+
+- **Motions select.** `w`, `e`, `b` select the text they move over; the visible
+  selection is what the next key acts on. The order is inverted from Vim: instead of
+  `dw` (delete word), you press `w` then `d` (select word, then delete). Collapsing the
+  selection after a motion is possible but breaks word operators, so it's not advised.
+- **Text objects live under match mode (`m`), not `v`.** Vim's `viw` is `mi w`, `vi)` is
+  `mi (`, `va"` is `ma "`, `vip` is `mi p`, etc. Because selection comes first, Vim's
+  `ci(` is `mi (` then `c`. `m` also covers `mm` (matching bracket, Vim's `%`) and
+  `ms`/`md`/`mr` (surround add/delete/replace).
+- **`hx .` opens the fuzzy file picker, not the explorer.** That picker is a flat,
+  recursive, gitignore-filtered finder, so it has no `../`. The directory browser with
+  `../` is the explorer on `Space e` (`file_explorer`).
+
 ## Keymaps
 
 | Keymap            | Action                                  |

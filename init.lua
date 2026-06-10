@@ -828,6 +828,23 @@ require("lazy").setup({
 		opts = {},
 	},
 
+	{ -- Animated cursor smear/trail
+		"sphamba/smear-cursor.nvim",
+		event = "VeryLazy",
+		main = "smear_cursor",
+		opts = {
+			cursor_color = "#aaffff",
+			never_draw_over_target = true,
+			smear_insert_mode = false,
+			min_vertical_distance_smear = 2,
+			min_horizontal_distance_smear = 2,
+			time_interval = 17, -- ms
+			stiffness = 0.9,
+			trailing_stiffness = 0.4,
+			damping = 0.99, -- stops bouncing
+		},
+	},
+
 	-- Add plugins here
 }, {
 	ui = {

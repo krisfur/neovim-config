@@ -114,30 +114,54 @@ from the project root, or use `uv run hx`, so they attach to the right interpret
 
 ## Coming from Vim
 
-Helix is selection-first (the Kakoune model), not Vim's operator-then-motion. This is
-the biggest adjustment and is intentional, not a misconfiguration:
+This config deliberately keeps Helix's native paradigm instead of rebinding keys to
+imitate Vim. Learning the model is less work than fighting it, and the model is small.
 
-- **Motions select.** `w`, `e`, `b` select the text they move over; the visible
-  selection is what the next key acts on. The order is inverted from Vim: instead of
-  `dw` (delete word), you press `w` then `d` (select word, then delete). Collapsing the
-  selection after a motion is possible but breaks word operators, so it's not advised.
-- **Text objects live under match mode (`m`), not `v`.** Vim's `viw` is `mi w`, `vi)` is
-  `mi (`, `va"` is `ma "`, `vip` is `mi p`, etc. Because selection comes first, Vim's
-  `ci(` is `mi (` then `c`. `m` also covers `mm` (matching bracket, Vim's `%`) and
-  `ms`/`md`/`mr` (surround add/delete/replace).
-- **`hx .` opens the fuzzy file picker, not the explorer.** That picker is a flat,
-  recursive, gitignore-filtered finder, so it has no `../`. The directory browser with
-  `../` is the explorer on `Space e` (`file_explorer`).
+**The core loop is object-then-verb.** A motion *selects* the text it moves over, and the
+visible selection is the operand the next key acts on. Vim's `dw` (verb-then-object) is
+Helix's `wd` (object-then-verb): same two keys, no mode switch. The persistent highlight
+is not a mode to escape - it's Helix showing you what the next verb will hit. The next
+motion just replaces it. You do **not** press `v` first; select mode is only for *gluing
+several motions into one larger selection* before acting (irregular ranges, sticky
+extends), which is rare in everyday editing.
+
+| Vim                       | Helix                  | Notes                                       |
+| ------------------------- | ---------------------- | ------------------------------------------- |
+| `dw` / `cw` / `yw`        | `w` then `d` / `c` / `y` | select first, then the verb               |
+| `dd` / `cc` / `yy`        | `x` then `d` / `c` / `y` | `x` selects the whole line                 |
+| `de` / `d$`               | `e` then `d` / `gl` then `d` | `gl` = goto line end                   |
+| `viw` / `vaw`             | `mi w` / `ma w`        | text objects live under match mode `m`      |
+| `vi(` / `va(`             | `mi (` / `ma (`        | also `mi {`, `mi "`, `mi p` (paragraph)     |
+| `ci(` / `di"`             | `mi (` then `c` / `mi "` then `d` | select the object, then the verb |
+| `%`                       | `mm`                   | jump to matching bracket                    |
+| `ysiw)` (surround add)    | `mi w` then `ms )`     | `ms`/`md`/`mr` = surround add/delete/replace|
+| `*` (search word)         | `*` then `n`           | `*` searches the current selection          |
+| `{` / `}`                 | `[p` / `]p`            | selects the paragraph it jumps over         |
+| `:%s/foo/bar/g`           | `%` `s` `foo<ret>` `c` | select all, split on regex, change each     |
+| `Ctrl-v` (block) + edit   | `C` / `Ctrl-c`         | add cursor below; multi-cursor is native    |
+
+Two things that surprise Vim users specifically:
+
+- **`hx .` opens the fuzzy file picker, not a directory listing.** That picker is a flat,
+  recursive, gitignore-filtered finder, so it has no `../`. The browsable explorer with
+  `../` is `Space e` (`file_explorer`).
+- **There's no `:Ex` / `:Rex`.** Helix has no custom command aliases. Use `Space e` to
+  explore and `Esc` or `g a` (go to last accessed file) to jump back.
+
+Run `:tutor` once - it's the fastest way to make the loop click.
 
 ## Keymaps
 
+Only three things here are added on top of stock Helix - `Ctrl-h/j/k/l` view nav,
+the file explorer on `Space e`/`E`, and markdown preview on `Space m`. Everything
+else in this table is a Helix default, listed so the Vim muscle memory has a target.
+
 | Keymap            | Action                                  |
 | ----------------- | --------------------------------------- |
-| `Ctrl-h/j/k/l`    | Move focus between split views          |
-| `{` / `}`         | Jump to prev / next paragraph (extends in select mode) |
-| `Space e` / `E`   | File explorer: current file's dir / workspace root (netrw `:Ex`) |
-| `Space m`         | Markdown preview in browser (pandoc)    |
-| `Space q`         | Diagnostics picker (mirrors `<leader>q`)|
+| `Ctrl-h/j/k/l`    | Move focus between split views (added)  |
+| `Space e` / `E`   | File explorer: current file's dir / workspace root (added) |
+| `Space m`         | Markdown preview in browser (pandoc, added) |
+| `[p` / `]p`       | Jump to prev / next paragraph (selects it) |
 | `Space f`         | File picker (built-in)                  |
 | `Space /`         | Project-wide search, regex (= nvim `<Space>sg`); type a pattern, results fill in |
 | `/`               | Search within the current buffer, regex; `n`/`N` to step (= nvim `<Space>/`) |
@@ -146,9 +170,6 @@ the biggest adjustment and is intentional, not a misconfiguration:
 | `Space k`         | Hover docs (built-in)                   |
 | `g d` / `g r`     | Goto definition / references (built-in) |
 | `g a`             | Go to last accessed file (netrw `:Rex`-ish) |
-
-There is no `:Ex` / `:Rex` typed command (Helix has no custom command aliases); the
-explorer is on `Space e`, and `Esc` or `g a` takes you back to your file.
 
 Note: in nvim `<Space>/` was a fuzzy search inside the current buffer. Helix has no
 fuzzy current-buffer picker, just regex search with `/`. `Space /` is the project-wide

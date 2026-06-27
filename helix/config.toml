@@ -47,25 +47,19 @@ enable = false               # set true (+ optional max-wrap) for breakindent-st
 [editor.search]
 smart-case = true
 
-# Ctrl-h/j/k/l window navigation
+# Ctrl-h/j/k/l window navigation. This is the one ergonomic carry-over from the
+# Neovim setup; it doesn't fight Helix's model (window focus is paradigm-neutral).
+# Helix's own default is the Vim-like `Ctrl-w h/j/k/l` prefix, still available.
 [keys.normal]
 C-h = "jump_view_left"
 C-j = "jump_view_down"
 C-k = "jump_view_up"
 C-l = "jump_view_right"
-# Vim-style paragraph jumps (Helix's defaults are ]p / [p). In normal mode
-# collapse the selection afterwards so it only moves the cursor; in select
-# mode (below) the motion extends the selection like Vim's visual mode.
-"{" = ["goto_prev_paragraph", "collapse_selection"]
-"}" = ["goto_next_paragraph", "collapse_selection"]
-
-# Same paragraph jumps while extending a selection (select/visual mode)
-[keys.select]
-"{" = "goto_prev_paragraph"
-"}" = "goto_next_paragraph"
+# Paragraph jumps are native: `]p` / `[p`. They select the paragraph they move
+# over (the selection-first model), which is intended - move again or hit a verb.
+# Diagnostics pickers are native too: `Space d` (document) / `Space D` (workspace).
 
 [keys.normal.space]
-q = "diagnostics_picker"     # ~ <leader>q (Space-d / Space-D are the built-in doc/workspace diagnostics)
 # File explorer (netrw :Ex). Space-e explores the current file's directory,
 # Space-E the workspace root. There is no :Rex; press Esc to leave the
 # explorer, or use `ga` (goto_last_accessed_file) to jump back to your file.

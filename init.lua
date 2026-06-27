@@ -29,6 +29,9 @@ vim.o.confirm = true
 vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
+-- Let the arrow keys wrap to the previous/next line at line boundaries.
+-- < > = normal/visual mode, [ ] = insert mode (keeps the b,s defaults).
+vim.o.whichwrap = "b,s,<,>,[,]"
 
 local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
 local tbl_unpack = table.unpack or unpack

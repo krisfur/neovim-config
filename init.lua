@@ -296,8 +296,6 @@ require("lazy").setup({
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
-			{ "mason-org/mason.nvim", opts = {} },
-			"WhoIsSethDaniel/mason-tool-installer.nvim",
 			{ "j-hui/fidget.nvim", opts = {} },
 			"saghen/blink.cmp",
 		},
@@ -563,25 +561,9 @@ require("lazy").setup({
 				}
 			end
 
-			local ensure_installed = {
-				"clangd",
-				"eslint-lsp",
-				"gopls",
-				"lua-language-server",
-				"ols",
-				"ty",
-				"prettier",
-				"ruff",
-				"rust-analyzer",
-				"stylua",
-				"tinymist",
-				"typescript-language-server",
-				"zls",
-			}
-			if not is_windows then
-				table.insert(ensure_installed, "swiftformat")
-			end
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+			-- Servers and formatters must be on PATH (or have an explicit cmd
+			-- above) - they are installed via the system package manager, not
+			-- Mason. See readme.md "Language servers and formatters" for the list.
 
 			for server_name, server in pairs(servers) do
 				server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
@@ -637,18 +619,6 @@ require("lazy").setup({
 		event = "VimEnter",
 		version = "1.*",
 		dependencies = {
-			{
-				"L3MON4D3/LuaSnip",
-				version = "2.*",
-				build = (function()
-					if is_windows or vim.fn.executable("make") == 0 then
-						return
-					end
-					return "make install_jsregexp"
-				end)(),
-				dependencies = {},
-				opts = {},
-			},
 			"folke/lazydev.nvim",
 		},
 		---@module 'blink.cmp'
@@ -669,7 +639,7 @@ require("lazy").setup({
 					lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
 				},
 			},
-			snippets = { preset = "luasnip" },
+			snippets = { preset = "default" },
 			fuzzy = { implementation = "lua" },
 			signature = { enabled = true },
 		},
@@ -706,13 +676,6 @@ require("lazy").setup({
 			-- Highlight inline code in markdown (backtick text like `hello`)
 			vim.api.nvim_set_hl(0, "@markup.raw.markdown_inline", { fg = "#ebcb8b" })
 		end,
-	},
-
-	{
-		"folke/todo-comments.nvim",
-		event = "VimEnter",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = { signs = false },
 	},
 
 	{ -- Mini.nvim modules
@@ -817,18 +780,6 @@ require("lazy").setup({
 		keys = {
 			{ "<leader>mp", "<cmd>MarkdownPreviewToggle<CR>", desc = "[M]arkdown [P]review toggle" },
 		},
-	},
-
-	{ -- Typst preview in browser
-		"chomosuke/typst-preview.nvim",
-		ft = "typst",
-		build = function()
-			require("typst-preview").update()
-		end,
-		keys = {
-			{ "<leader>tp", "<cmd>TypstPreviewToggle<CR>", ft = "typst", desc = "[T]ypst [P]review toggle" },
-		},
-		opts = {},
 	},
 
 	{ -- Animated cursor smear/trail
